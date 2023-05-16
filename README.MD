@@ -5,8 +5,8 @@
 - tear-down: Proceso de limpieza al final de una tarea o proceso.
 
 Comandos utilizados para hacer la Instalación:
--sudo dnf update -y
--sudo dnf install -y httpd wget php-fpm php-mysqli php-json php php-devel
+- sudo dnf update -y
+- sudo dnf install -y httpd wget php-fpm php-mysqli php-json php php-devel
 - sudo dnf install mariadb105-server
 - sudo dnf info package_name
 - sudo systemctl start httpd
