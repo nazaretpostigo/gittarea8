@@ -34,4 +34,37 @@ Comandos utilizados para hacer la Instalación:
 - rm phpMyAdmin-latest-all-languages.tar.gz
 - sudo systemctl start mariadb
 
+Resources:
+  LAMPSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for LAMP stack
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
 
+  LAMPInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: al2023-ami-2023.0.20230503.0-kernel-6.1-x86_64
+      InstanceType: t2.micro
+      UserData:
+        Fn::Base64: stringub |
+          #!/bin/bash
+          exec > /tmp/install.log 2/d1
+          yum -y update
+          yum install httpd mariadb-server -y
+
+          echo "<?php phpinfo(); ?>" > /var/www/html/index.php
+
+          /opt/aws/bin/cfn-signal -e $? 
+              --stack $ {aws::tarea 10{
+              --region $ {aws::us-east-1
+              --resource EC2 Instance
+              
