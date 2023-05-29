@@ -42,16 +42,55 @@ Resources:
       Tags:
         - Key: Name
           Value: !Join ["-", [!Ref "AWS::StackName", !Ref "AWS::AccountId"]]
-Outputs:
-  InstanceId:
-    Description: "Id Instancia EC2"
-    Value: AWS::StackId
-    Export: 
-      Name: Outputs
-  ServerPublicIp:
-    Description: "DNS"
-    Value: !Sub 
-        - 'http::\\.${Domain}:80'
-        - Domain: !GetAtt WordPressServer.PublicDnsName
-    Export:
-      Name: ServerPublicIp
+  WordPressServer:
+    CreationPolicy:
+        ResourceSignal:
+          Timeout: PT7M
+          Count: 1
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref EC2AMI
+      InstanceType: !Ref EC2InstanceType
+      KeyName: vockey
+      IamInstanceProfile: LabInstanceProfile
+      SecurityGroupIds: 
+        - Ref: SecurityGroup
+      UserData:
+            Fn::Base64: !Sub |
+              #!/bin/bash -xe
+              sudo dnf update && sudo dnf upgrade -y
+              sudo dnf install httpd -y && sudo service httpd start
+              sudo dnf install mariadb105-server -y  
+              sudo service mariadb start
+              sudo systemctl enable mariadb
+              sudo dnf install php php-devel -y
+              echo "<?php phpinfo();?>" | sudo tee /var/www/html/phpinfo.php &>/dev/null
+              /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource WordPressServer --region ${AWS::Region}
+
+              systemctl restart httpd
+  Outputs:
+    InstanceId:
+      Description: "Id Instancia EC2"
+      Value: AWS::StackId
+      Export: 
+        Name: Outputs
+    ServerPublicIp:
+      Description: "DNS"
+      Value: !Sub 
+          - 'http::\\.${Domain}:80'
+          - Domain: !GetAtt WordPressServer.PublicDnsName
+      Export:
+        Name: ServerPublicIp
+
+WorpressDataBase:
+  Type: AWS::RDS::DBInstance
+  Properties:
+    DBInstanceIdentifier: DBNazaretPG
+    EngyneType: MariaDB
+    EngyneVersion: "10.6.10"
+    AllocatedStorage: "400"
+    DBInstanceClass: db.m6gd.large
+    MasterUsername: NazaretWordPress
+    MasterPassword: NposgorWordPress2505
+    VPCSecurityGroups:
+      - !GetAtt InstanceSecurityGroup Group.Id
