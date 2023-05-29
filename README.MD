@@ -33,3 +33,11 @@ Comandos utilizados para hacer la Instalación:
 - mkdir phpMyAdmin && tar -xvzf phpMyAdmin-latest-all-languages.tar.gz -C phpMyAdmin --strip-components 1
 - rm phpMyAdmin-latest-all-languages.tar.gz
 - sudo systemctl start mariadb
+
+
+Configuración de la Base de Datos:
+sudo mysql -e "UPDATE mysql.user SET Password = NposgorWordPress2505 WHERE User = 'NazaretWordPress'" 
+
+Reiniciamos el servidor:
+sudo service httpd restart 
+
